@@ -9,28 +9,68 @@ import {fetchPokemon, PokemonInfoFallback, PokemonDataView} from '../pokemon'
 // PokemonDataView: the stuff we use to display the pokemon info
 import {PokemonForm} from '../pokemon'
 
+const defaultState = {
+  status: 'idle',
+  error: null,
+  pokemon: null,
+}
+
 function PokemonInfo({pokemonName}) {
-  const [pokemon, setPokemon] = React.useState()
+  const [state, setState] = React.useState(defaultState)
 
   React.useEffect(() => {
-    if (typeof pokemonName !== 'string' && !pokemonName.length) return
-    setPokemon(null)
+    if (!pokemonName) return
+    setState({status: 'pending', error: null, pokemon: null})
     fetchPokemon(pokemonName)
       .then(pokemon => {
-        setPokemon(pokemon)
+        setState({status: 'resolved', error: null, pokemon})
       })
       .catch(error => {
-        console.error(error)
+        setState({status: 'rejected', error, pokemon: null})
       })
   }, [pokemonName])
 
-  if (!pokemonName) {
+  const {status, error, pokemon} = state || {}
+
+  if (status === 'rejected') {
+    throw error
+  }
+  if (status === 'idle') {
     return 'Submit a pokemon'
   }
-  if (!pokemon) {
+  if (status === 'pending') {
     return <PokemonInfoFallback name={pokemonName} />
   }
   return <PokemonDataView pokemon={pokemon} />
+}
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      hasError: false,
+      error: null,
+    }
+  }
+
+  static getDerivedStateFromError(error) {
+    return {hasError: true, error}
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div role="alert">
+          There was an error:{' '}
+          <pre style={{whiteSpace: 'normal'}}>
+            {this.state?.error?.message || 'lol'}
+          </pre>
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
 }
 
 function App() {
@@ -45,7 +85,9 @@ function App() {
       <PokemonForm pokemonName={pokemonName} onSubmit={handleSubmit} />
       <hr />
       <div className="pokemon-info">
-        <PokemonInfo pokemonName={pokemonName} />
+        <ErrorBoundary key={pokemonName}>
+          <PokemonInfo pokemonName={pokemonName} />
+        </ErrorBoundary>
       </div>
     </div>
   )
