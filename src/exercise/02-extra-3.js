@@ -4,17 +4,12 @@
 import * as React from 'react'
 
 function Greeting({initialName = ''}) {
-  const [name, setName] = React.useState(
-    window.localStorage.getItem('name') || initialName,
-  )
-
-  React.useEffect(() => {
-    window.localStorage.setItem('name', name)
-  })
+  const [name, setName] = useLocalStorage('name')
 
   function handleChange(event) {
     setName(event.target.value)
   }
+
   return (
     <div>
       <form>
@@ -24,6 +19,18 @@ function Greeting({initialName = ''}) {
       {name ? <strong>Hello {name}</strong> : 'Please type your name'}
     </div>
   )
+}
+
+function useLocalStorage(key, initialValue = '') {
+  const [value, setValue] = React.useState(
+    () => window.localStorage.getItem(key) || initialValue,
+  )
+
+  React.useEffect(() => {
+    window.localStorage.setItem(key, value)
+  }, [key, value])
+
+  return [value, setValue]
 }
 
 function App() {
