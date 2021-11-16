@@ -7,7 +7,6 @@ function Greeting() {
   const [name, setName] = React.useState('')
 
   function handleChange(event) {
-    // 🐨 update the name here based on event.target.value
     setName(event.target.value)
   }
 

@@ -4,12 +4,6 @@
 
 import * as React from 'react'
 
-// If you'd rather practice refactoring a class component to a function
-// component with hooks, then go ahead and do this exercise.
-
-// 🦉 You've learned all the hooks you need to know to refactor this Board
-// component to hooks. So, let's make it happen!
-
 class Board extends React.Component {
   state = {
     squares:
